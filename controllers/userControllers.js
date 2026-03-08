@@ -1,8 +1,8 @@
+
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
-// Register
 export const register = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -12,9 +12,8 @@ export const register = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "Email already exists" });
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
+    
+    const hashPassword = await bcrypt.hash(password, 6);
     const user = await User.create({ email, password: hashPassword, role: "user" });
 
     const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "24h" });
@@ -25,7 +24,6 @@ export const register = async (req, res) => {
   }
 };
 
-// Login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -45,12 +43,10 @@ export const login = async (req, res) => {
   }
 };
 
-// Logout
 export const logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-// Get Profile
 export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-password");
@@ -62,7 +58,6 @@ export const getProfile = async (req, res) => {
   }
 };
 
-// Update Profile
 export const updateProfile = async (req, res) => {
   try {
     const { email, password, ...otherFields } = req.body;
@@ -88,7 +83,6 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Delete User
 export const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.user.userId);
