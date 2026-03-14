@@ -6,11 +6,10 @@ import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import mongoose from "mongoose";
 import multer from "multer";
-import cloudinary from 'cloudinary'
+import cloudinary from "cloudinary";
 import path from "path";
 import { fileURLToPath } from "url";
-
-
+import File from "./models/file.js"; 
 
 dotenv.config(); 
 
@@ -21,11 +20,9 @@ const app = express();
 app.use(express.json());  
 
 const allowedOrigins = [
-  "http://localhost:3000",
+  "http://localhost:3000", 
   process.env.FRONTEND_URL 
 ].filter(Boolean);
-
-
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
@@ -51,47 +48,67 @@ async function run() {
 
 run();
 
-// Routes
-app.use("/api/auth", authRoutes);  
-app.use("/api/products", productRoutes);  
-
-// Health check route to confirm server is running
-app.get("/", (req, res) => res.json({ message: "Server is running" }));
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-//-----------------------------------------
-const fileSchema = new mongoose.Schema(
-  {
-    originalName: String,
-    cloudinaryUrl: String,
-    cloudinaryId: String,
-    fileType: String,
-    fileSize: Number
-  },
-  { timestamps: true }
-);
-
-
-
-const File = mongoose.model("File", fileSchema);
-
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, 
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
-    else cb(new Error("Only image files allowed"), false);
+    else cb(new Error("Only image files are allowed"), false);
   }
+});
+
+app.post("/api/upload", upload.single("image"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
+  }
+
+  try {
+    const cloudinaryResponse = await cloudinary.v2.uploader.upload_stream(
+      { resource_type: "image" },
+      async (error, result) => {
+        if (error) {
+          return res.status(500).json({ message: error.message });
+        }
+
+        const newFile = new File({
+          originalName: req.file.originalname,
+          cloudinaryUrl: result.secure_url,
+          cloudinaryId: result.public_id,
+          fileType: req.file.mimetype,
+          fileSize: req.file.size,
+        });
+
+        await newFile.save();
+
+        res.status(200).json({
+          message: "Image uploaded successfully",
+          file: newFile,
+        });
+      }
+    );
+
+    req.file.stream.pipe(cloudinaryResponse);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+
+app.get("/", (req, res) => res.json({ message: "Server is running" }));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 mongoose
