@@ -1,6 +1,4 @@
-
 import mongoose from "mongoose";
-
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -26,6 +24,10 @@ const productSchema = new mongoose.Schema(
     isAvailable: {
       type: Boolean,
       default: true,
+    },
+     imageUrl: {  
+      type: String,
+      required: true, 
     },
   },
   {
