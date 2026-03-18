@@ -19,7 +19,6 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 
-// CORS configuration
 const allowedOrigins = [
   "http://localhost:3000", 
   process.env.FRONTEND_URL 
@@ -27,7 +26,6 @@ const allowedOrigins = [
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-// MongoDB connection
 const DB_URL = process.env.MONGO_URI;
 const client = new MongoClient(DB_URL, {
   serverApi: {
@@ -50,7 +48,6 @@ async function run() {
 
 run();
 
-// Cloudinary configuration
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -59,7 +56,7 @@ cloudinary.v2.config({
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },  // Max file size 5 MB
+  limits: { fileSize: 5 * 1024 * 1024 }, 
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
     else cb(new Error("Only image files are allowed"), false);
@@ -71,10 +68,19 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
     return res.status(400).json({ message: "No file uploaded" });
   }
 
-  try {
-    console.log("Received file:", req.file);  // Log the received file for debugging
+  const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); 
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
 
-    // Upload to Cloudinary using the file buffer
+const upload = multer({ storage });
+  try {
+    console.log("Received file:", req.file);  
+
     const cloudinaryResponse = await new Promise((resolve, reject) => {
       cloudinary.v2.uploader.upload_stream(
         { resource_type: "image" },
@@ -91,7 +97,6 @@ app.post("/api/upload", upload.single("image"), async (req, res) => {
 
     console.log("Cloudinary upload result:", cloudinaryResponse);
 
-    // Save file metadata in MongoDB
     const newFile = new File({
       originalName: req.file.originalname,
       cloudinaryUrl: cloudinaryResponse.secure_url,
