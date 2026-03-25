@@ -8,9 +8,7 @@ const token = jwt.sign(
   { expiresIn: "24h" }
 );
 
-/* ===============================
-    CREATE ORDER (User Only)
-=============================== */
+
 export const createOrder = async (req, res) => {
   try {
     const { items } = req.body;
@@ -45,9 +43,7 @@ export const createOrder = async (req, res) => {
   }
 };
 
-/* ===============================
-    GET USER ORDERS (User Only)
-=============================== */
+
 export const getMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id }).populate("items.product");
@@ -60,9 +56,7 @@ export const getMyOrders = async (req, res) => {
   }
 };
 
-/* ===============================
-    GET ALL ORDERS (Admin Only)
-=============================== */
+
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate("user").populate("items.product");
