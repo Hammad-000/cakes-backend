@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
-    title: {       // frontend uses product.title
+    title: {     
       type: String,
       required: true,
       trim: true,
@@ -17,7 +17,7 @@ const productSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    originalPrice: {   // optional for discounts
+    originalPrice: {   
       type: Number,
     },
     category: {
@@ -25,17 +25,17 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    image: {          // frontend uses product.image
+    image: {     
       type: String,
       required: true,
     },
-    rating: {         // frontend StarRating expects rating
+    rating: {         
       type: Number,
       default: 0,
       min: 0,
       max: 5,
     },
-    count: {          // optional for StarRating reviews count
+    count: {         
       type: Number,
       default: 0,
     },
