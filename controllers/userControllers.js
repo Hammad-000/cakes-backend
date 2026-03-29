@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
-// Helper to generate JWT
+// --------------------- HELPER: Generate JWT ---------------------
 const generateToken = (user) =>
   jwt.sign(
     { userId: user._id, role: user.role },
@@ -10,7 +10,7 @@ const generateToken = (user) =>
     { expiresIn: "24h" }
   );
 
-// --------------------- REGISTER USER ---------------------
+// --------------------- REGISTER USER (DEFAULT ROLE: USER) ---------------------
 export const register = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -25,9 +25,10 @@ export const register = async (req, res) => {
     if (existingUser)
       return res.status(400).json({ message: "Email already exists" });
 
-    // Create user with hashed password
     const hashedPassword = await bcrypt.hash(password, 6);
-    const user = await User.create({ email, password: hashedPassword });
+
+    // Force role to "user" for security
+    const user = await User.create({ email, password: hashedPassword, role: "user" });
 
     const token = generateToken(user);
 
@@ -45,6 +46,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password)
       return res.status(400).json({ message: "Email and password required" });
 
@@ -73,27 +75,24 @@ export const logout = (req, res) => {
   res.json({ message: "Logged out successfully" });
 };
 
-// --------------------- CREATE ADMIN (ADMIN ONLY) ---------------------
+// --------------------- CREATE ADMIN (PROTECTED / ADMIN ONLY) ---------------------
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email || !password)
       return res.status(400).json({ message: "Email and password required" });
-    }
 
-    const existing = await User.findOne({ email });
-    if (existing) {
+    const existingAdmin = await User.findOne({ email });
+    if (existingAdmin)
       return res.status(400).json({ message: "Admin already exists" });
-    }
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 6);
 
     const admin = await User.create({
       email,
       password: hashedPassword,
-      role: "admin", // enforce admin role
+      role: "admin", // always enforce admin role
     });
 
     res.status(201).json({
@@ -104,7 +103,6 @@ export const adminLogin = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 // --------------------- GET PROFILE ---------------------
 export const getProfile = async (req, res) => {
@@ -129,7 +127,8 @@ export const updateProfile = async (req, res) => {
         email,
         _id: { $ne: req.user.userId },
       });
-      if (existingUser) return res.status(400).json({ message: "Email already in use" });
+      if (existingUser)
+        return res.status(400).json({ message: "Email already in use" });
       updates.email = email;
     }
 
