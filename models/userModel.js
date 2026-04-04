@@ -25,6 +25,6 @@ const userSchema = new mongoose.Schema(
 );
 
 // Ensure indexes are created for unique constraints
-userSchema.index({ email: 1 }, { unique: true });
+// userSchema.index({ email: 1 }, { unique: true });
 
 export default mongoose.model("User", userSchema);
