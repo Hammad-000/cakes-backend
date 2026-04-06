@@ -81,4 +81,4 @@ app.use("/api/products", productRoutes);
 app.get("/", (req, res) => res.json({ message: "Server is running" }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running at ${PORT}`));

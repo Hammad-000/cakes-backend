@@ -9,11 +9,10 @@ const getAllProducts = async (req, res) => {
     if (page < 1) page = 1; 
     if (limit > 100) limit = 100; 
 
-    const products = await Product.find()
-      .skip((page - 1) * limit)
-      .limit(limit);
-    const totalProducts = await Product.countDocuments();
-    const totalPages = Math.ceil(totalProducts / limit);
+const products = await Product.find({ isAvailable: true })
+  .skip((page - 1) * limit)
+  .limit(limit);
+const totalProducts = await Product.countDocuments({ isAvailable: true });
 
     res.status(200).json({
       message: 'Admin Get All Products Successfully!',
