@@ -13,6 +13,7 @@ const getAllProducts = async (req, res) => {
   .skip((page - 1) * limit)
   .limit(limit);
 const totalProducts = await Product.countDocuments({ isAvailable: true });
+ const totalPages = Math.ceil(totalProducts / limit);
 
     res.status(200).json({
       message: 'Admin Get All Products Successfully!',
