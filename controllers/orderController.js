@@ -11,10 +11,15 @@ const token = jwt.sign(
 
 export const createOrder = async (req, res) => {
   try {
-    const { items } = req.body;
+    const { items, customer } = req.body;
 
     if (!items || !items.length) {
       return res.status(400).json({ message: "Order must have at least one item" });
+    }
+
+    // Validate required customer fields
+    if (!customer || !customer.fullName || !customer.email || !customer.phone || !customer.address) {
+      return res.status(400).json({ message: "Customer information is required (fullName, email, phone, address)" });
     }
 
     // Calculate total price
@@ -29,6 +34,13 @@ export const createOrder = async (req, res) => {
 
     const order = await Order.create({
       user: req.user._id,
+      customer: {
+        fullName: customer.fullName,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+        city: customer.city || ""
+      },
       items,
       totalPrice,
       status: "pending",
@@ -42,7 +54,6 @@ export const createOrder = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 export const getMyOrders = async (req, res) => {
   try {
