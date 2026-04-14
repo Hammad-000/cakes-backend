@@ -107,7 +107,7 @@ export const adminLogin = async (req, res) => {
 // --------------------- GET PROFILE ---------------------
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select("-password");
+      const user = await User.findById(req.user._id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json({ user });
@@ -153,7 +153,7 @@ export const updateProfile = async (req, res) => {
 // --------------------- DELETE USER ---------------------
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.user.userId);
+    const user = await User.findByIdAndDelete(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json({ message: "User deleted successfully" });

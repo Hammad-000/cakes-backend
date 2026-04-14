@@ -11,6 +11,7 @@ import orderRoutes from './routes/orderRoutes.js';
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
 
 app.use((req, res, next) => {
