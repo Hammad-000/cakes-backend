@@ -1,13 +1,5 @@
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
-import jwt from "jsonwebtoken";
-
-const token = jwt.sign(
-  { userId: user._id, role: user.role },
-  process.env.JWT_SECRET,
-  { expiresIn: "24h" }
-);
-
 
 export const createOrder = async (req, res) => {
   try {
@@ -17,12 +9,10 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: "Order must have at least one item" });
     }
 
-    // Validate required customer fields
     if (!customer || !customer.fullName || !customer.email || !customer.phone || !customer.address) {
       return res.status(400).json({ message: "Customer information is required (fullName, email, phone, address)" });
     }
 
-    // Calculate total price
     let totalPrice = 0;
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -67,7 +57,6 @@ export const getMyOrders = async (req, res) => {
   }
 };
 
-
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate("user").populate("items.product");
@@ -79,7 +68,6 @@ export const getAllOrders = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 export const updateOrderStatus = async (req, res) => {
   try {
