@@ -2,7 +2,7 @@ import Product from "../models/productModel.js";
 
 const getAllProducts = async (req, res) => {
   try {
-    let { page = 1, limit = 10 } = req.query;
+    let { page = 1, limit = 50 } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
