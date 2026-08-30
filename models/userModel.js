@@ -7,8 +7,8 @@ const userSchema = new mongoose.Schema(
       required: [true, "Email is required"],
       unique: true,
       lowercase: true,
-      trim: true, // remove extra spaces
-      match: [/\S+@\S+\.\S+/, "Invalid email format"], // simple email validation
+      trim: true,
+      match: [/\S+@\S+\.\S+/, "Invalid email format"], 
     },
     password: {
       type: String,
@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"], // only allow these two roles
+      enum: ["user", "admin"], 
       default: "user",
     },
   },
